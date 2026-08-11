@@ -4,14 +4,14 @@ These URLs are active while the cloud agent session is running.
 
 ## Primary (Cloudflare — recommended)
 
-- **Homepage:** https://jacob-martin-moves-subjects.trycloudflare.com/
-- **RedGIFs (Browser mode):** https://jacob-martin-moves-subjects.trycloudflare.com/browse?url=https://www.redgifs.com
-- **Any URL (UV):** https://jacob-martin-moves-subjects.trycloudflare.com/?url=https://example.com
+- **Homepage:** https://shall-photographers-census-viewer.trycloudflare.com/
+- **RedGIFs (Browser mode):** https://shall-photographers-census-viewer.trycloudflare.com/browse?url=https://www.redgifs.com
+- **Any URL (UV):** https://shall-photographers-census-viewer.trycloudflare.com/?url=https://example.com
 
 ## Backup (localtunnel)
 
-- **Homepage:** https://fruity-brooms-hope.loca.lt/
-- **RedGIFs (Browser mode):** https://fruity-brooms-hope.loca.lt/browse?url=https://www.redgifs.com
+- **Homepage:** https://petite-views-rest.loca.lt/
+- **RedGIFs (Browser mode):** https://petite-views-rest.loca.lt/browse?url=https://www.redgifs.com
 
 localtunnel may show a one-time **“Click to Continue”** page on first visit.
 
