@@ -9,6 +9,7 @@ import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { bareModulePath } from "@mercuryworkshop/bare-as-module3";
+import { attachBrowserProxy } from "./browser.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicPath = join(__dirname, "..", "public");
@@ -41,6 +42,10 @@ app.use("/libcurl/", express.static(libcurlWasmPath));
 app.use("/baremux/", express.static(baremuxPath));
 app.use("/baremod/", express.static(bareModulePath));
 
+app.get("/browse", (_req, res) => {
+  res.sendFile(join(publicPath, "browse.html"));
+});
+
 app.use((req, res) => {
   res.status(404);
   res.sendFile(join(publicPath, "404.html"));
@@ -49,8 +54,7 @@ app.use((req, res) => {
 const server = createServer();
 
 server.on("request", (req, res) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  // Bare does not need COEP; COEP breaks many sites under UV.
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 
   if (bare.shouldRoute(req)) {
@@ -60,13 +64,23 @@ server.on("request", (req, res) => {
   app(req, res);
 });
 
+const browseWss = attachBrowserProxy();
+
 server.on("upgrade", (req, socket, head) => {
+  const pathname = (req.url || "").split("?")[0];
+
+  if (pathname === "/browse-ws") {
+    browseWss.handleUpgrade(req, socket, head, (ws) => {
+      browseWss.emit("connection", ws, req);
+    });
+    return;
+  }
+
   if (bare.shouldRoute(req)) {
     bare.routeUpgrade(req, socket, head);
     return;
   }
 
-  const pathname = (req.url || "").split("?")[0];
   if (pathname === "/wisp/" || pathname.endsWith("/wisp/")) {
     wisp.routeRequest(req, socket, head);
     return;
@@ -81,7 +95,8 @@ server.on("listening", () => {
   console.log("Ultraviolet proxy listening on:");
   console.log(`\thttp://localhost:${address.port}`);
   console.log(`\thttp://${hostname()}:${address.port}`);
-  console.log("\tTransports: epoxy/libcurl (wisp) + bare (/bare/)");
+  console.log("\tUV transports: bare + epoxy/libcurl (wisp)");
+  console.log(`\tBrowser mode:  http://localhost:${address.port}/browse`);
 });
 
 process.on("SIGINT", shutdown);

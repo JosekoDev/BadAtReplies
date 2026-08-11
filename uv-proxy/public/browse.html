@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Browser Mode | Web Proxy</title>
+		<link rel="stylesheet" href="/index.css" />
+		<style>
+			.browse-wrap {
+				display: flex;
+				flex-direction: column;
+				height: calc(100vh - 57px);
+			}
+			#screen {
+				flex: 1;
+				width: 100%;
+				object-fit: contain;
+				background: #000;
+				cursor: default;
+				touch-action: none;
+			}
+			.hint {
+				padding: 8px 14px;
+				color: var(--muted);
+				font-size: 13px;
+				border-bottom: 1px solid var(--line);
+			}
+			.mode-link {
+				color: var(--accent);
+				margin-left: 10px;
+			}
+		</style>
+	</head>
+	<body class="proxy-active">
+		<header class="topbar">
+			<a class="home-btn" href="/" style="text-decoration: none">UV Proxy</a>
+			<form id="browse-form" class="topbar-form">
+				<input
+					id="browse-address"
+					type="text"
+					placeholder="https://www.redgifs.com"
+					autocomplete="off"
+					spellcheck="false"
+				/>
+				<button type="submit" class="go-btn">Go</button>
+			</form>
+		</header>
+		<div class="browse-wrap">
+			<div class="hint">
+				Browser mode uses a real Chromium session (best for sites UV cannot
+				rewrite). Click/scroll/type on the stream.
+				<a class="mode-link" href="/">Back to Ultraviolet</a>
+				<span id="browse-status"></span>
+			</div>
+			<canvas id="screen" width="1280" height="800"></canvas>
+		</div>
+		<script src="/browse.js"></script>
+	</body>
+</html>
