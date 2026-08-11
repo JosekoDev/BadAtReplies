@@ -4,14 +4,14 @@ These URLs are active while the cloud agent session is running.
 
 ## Primary (Cloudflare — recommended)
 
-- **Homepage:** https://shall-photographers-census-viewer.trycloudflare.com/
-- **RedGIFs (Browser mode):** https://shall-photographers-census-viewer.trycloudflare.com/browse?url=https://www.redgifs.com
-- **Any URL (UV):** https://shall-photographers-census-viewer.trycloudflare.com/?url=https://example.com
+- **Homepage:** https://arcade-litigation-stones-drawing.trycloudflare.com/
+- **RedGIFs (Browser mode):** https://arcade-litigation-stones-drawing.trycloudflare.com/browse?url=https://www.redgifs.com
+- **Any URL (UV):** https://arcade-litigation-stones-drawing.trycloudflare.com/?url=https://example.com
 
 ## Backup (localtunnel)
 
-- **Homepage:** https://petite-views-rest.loca.lt/
-- **RedGIFs (Browser mode):** https://petite-views-rest.loca.lt/browse?url=https://www.redgifs.com
+- **Homepage:** https://petite-jobs-jump.loca.lt/
+- **RedGIFs (Browser mode):** https://petite-jobs-jump.loca.lt/browse?url=https://www.redgifs.com
 
 localtunnel may show a one-time **“Click to Continue”** page on first visit.
 
@@ -34,4 +34,5 @@ localtunnel may show a one-time **“Click to Continue”** page on first visit.
 ```bash
 cd uv-proxy && npm install && npm start
 npx localtunnel --port 8080
+# or: cloudflared tunnel --url http://localhost:8080
 ```
