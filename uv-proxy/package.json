@@ -16,6 +16,7 @@
     "@mercuryworkshop/libcurl-transport": "^2.0.5",
     "@mercuryworkshop/wisp-js": "^0.4.1",
     "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "ws": "^8.19.0"
   }
 }

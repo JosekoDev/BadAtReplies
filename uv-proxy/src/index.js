@@ -18,6 +18,12 @@ const libcurlPath = join(
   "libcurl-transport",
   "dist"
 );
+const libcurlWasmPath = join(
+  __dirname,
+  "..",
+  "node_modules",
+  "libcurl.js"
+);
 
 // Allow proxied destinations freely; behind Cloudflare tunnel
 wisp.options.allow_udp_streams = true;
@@ -35,6 +41,7 @@ app.use(express.static(publicPath));
 app.use("/uv/", express.static(uvPath));
 app.use("/epoxy/", express.static(epoxyPath));
 app.use("/libcurl/", express.static(libcurlPath));
+app.use("/libcurl/", express.static(libcurlWasmPath));
 app.use("/baremux/", express.static(baremuxPath));
 
 app.use((req, res) => {

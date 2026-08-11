@@ -7,9 +7,23 @@ const error = document.getElementById("uv-error");
 const errorCode = document.getElementById("uv-error-code");
 const statusEl = document.getElementById("uv-status");
 
-const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+let connection;
+
+function setStatus(msg) {
+  if (statusEl) statusEl.textContent = msg || "";
+}
+
+function showError(title, err) {
+  error.textContent = title;
+  errorCode.textContent = err ? String(err) : "";
+  console.error(title, err);
+}
 
 function wispUrl() {
+  const mode = document.getElementById("uv-wisp")?.value || "local";
+  if (mode === "public") {
+    return "wss://wisp.mercurywork.shop/";
+  }
   return (
     (location.protocol === "https:" ? "wss" : "ws") +
     "://" +
@@ -18,33 +32,39 @@ function wispUrl() {
   );
 }
 
-function setStatus(msg) {
-  if (statusEl) statusEl.textContent = msg || "";
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(label + " timed out after " + ms + "ms")), ms)
+    ),
+  ]);
+}
+
+async function getConnection() {
+  if (!connection) {
+    connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+  }
+  return connection;
 }
 
 async function ensureTransport() {
-  const transport = document.getElementById("uv-transport")?.value || "libcurl";
+  const conn = await getConnection();
+  const transport = document.getElementById("uv-transport")?.value || "epoxy";
   const url = wispUrl();
 
   if (transport === "libcurl") {
-    await connection.setTransport("/libcurl/index.mjs", [{ wisp: url }]);
+    await withTimeout(
+      conn.setTransport("/libcurl/index.mjs", [{ wisp: url }]),
+      15000,
+      "libcurl transport"
+    );
   } else {
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: url }]);
-  }
-}
-
-async function boot() {
-  setStatus("Connecting proxy transport…");
-  try {
-    // Transport MUST be set before the service worker handles requests
-    await ensureTransport();
-    await registerSW();
-    setStatus("Ready — enter a URL");
-  } catch (err) {
-    setStatus("");
-    error.textContent = "Failed to initialize proxy.";
-    errorCode.textContent = err.toString();
-    console.error(err);
+    await withTimeout(
+      conn.setTransport("/epoxy/index.mjs", [{ wisp: url }]),
+      15000,
+      "epoxy transport"
+    );
   }
 }
 
@@ -53,19 +73,20 @@ async function navigateTo(input) {
   errorCode.textContent = "";
 
   if (!input || !String(input).trim()) {
-    error.textContent = "Enter a URL or domain.";
+    showError("Enter a URL or domain.");
     return;
   }
 
-  setStatus("Loading…");
+  setStatus("Setting up transport…");
 
   try {
+    // CRITICAL: transport before SW handles navigations
     await ensureTransport();
+    setStatus("Registering service worker…");
     await registerSW();
   } catch (err) {
     setStatus("");
-    error.textContent = "Failed to register service worker / transport.";
-    errorCode.textContent = err.toString();
+    showError("Proxy setup failed. Try switching transport or Wisp endpoint.", err);
     throw err;
   }
 
@@ -73,25 +94,37 @@ async function navigateTo(input) {
   const frame = document.getElementById("uv-frame");
   frame.style.display = "block";
   document.body.classList.add("proxy-active");
+  setStatus("Loading " + url);
   frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
-  setStatus("");
+
+  frame.addEventListener(
+    "load",
+    () => {
+      setStatus("Loaded (proxied)");
+    },
+    { once: true }
+  );
 }
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await navigateTo(address.value);
+  try {
+    await navigateTo(address.value);
+  } catch (_) {
+    /* shown already */
+  }
 });
 
 document.querySelectorAll(".quick-link").forEach((btn) => {
   btn.addEventListener("click", async () => {
     const url = btn.dataset.url;
     address.value = url;
-    await navigateTo(url);
+    try {
+      await navigateTo(url);
+    } catch (_) {
+      /* shown already */
+    }
   });
-});
-
-document.getElementById("uv-transport")?.addEventListener("change", () => {
-  ensureTransport().catch(console.error);
 });
 
 document.getElementById("uv-home")?.addEventListener("click", () => {
@@ -100,13 +133,27 @@ document.getElementById("uv-home")?.addEventListener("click", () => {
   frame.style.display = "none";
   document.body.classList.remove("proxy-active");
   setStatus("Ready — enter a URL");
+  error.textContent = "";
+  errorCode.textContent = "";
 });
 
-boot().then(() => {
-  const params = new URLSearchParams(location.search);
-  const initialUrl = params.get("url");
-  if (initialUrl) {
-    address.value = initialUrl;
-    navigateTo(initialUrl);
-  }
-});
+// Warm connection in background; never block the UI
+setStatus("Ready — enter a URL");
+getConnection()
+  .then(() => ensureTransport())
+  .then(() => registerSW())
+  .then(() => setStatus("Ready — enter a URL"))
+  .catch((err) => {
+    console.warn("Background init warning:", err);
+    setStatus("Ready (transport will connect on Go)");
+  });
+
+const params = new URLSearchParams(location.search);
+const initialUrl = params.get("url");
+if (initialUrl) {
+  address.value = initialUrl;
+  // Wait a tick so deferred scripts / DOM are settled
+  setTimeout(() => {
+    navigateTo(initialUrl).catch(() => {});
+  }, 50);
+}
