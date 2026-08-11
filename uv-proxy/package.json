@@ -1,0 +1,21 @@
+{
+  "name": "uv-proxy",
+  "version": "1.0.0",
+  "description": "Ultraviolet web proxy with custom URL support",
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@mercuryworkshop/bare-mux": "^2.1.8",
+    "@mercuryworkshop/epoxy-transport": "2.1.28",
+    "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
+    "express": "^5.2.1",
+    "wisp-server-node": "1.1.7",
+    "ws": "^8.19.0"
+  }
+}
