@@ -11,11 +11,13 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "@mercuryworkshop/bare-as-module3": "^2.2.5",
     "@mercuryworkshop/bare-mux": "^2.1.8",
     "@mercuryworkshop/epoxy-transport": "2.1.28",
     "@mercuryworkshop/libcurl-transport": "^2.0.5",
     "@mercuryworkshop/wisp-js": "^0.4.1",
     "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
+    "@tomphttp/bare-server-node": "^2.0.5",
     "express": "^5.2.1",
     "ws": "^8.19.0"
   }

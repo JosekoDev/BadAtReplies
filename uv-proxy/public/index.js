@@ -32,11 +32,18 @@ function wispUrl() {
   );
 }
 
+function bareUrl() {
+  return location.origin + "/bare/";
+}
+
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(label + " timed out after " + ms + "ms")), ms)
+      setTimeout(
+        () => reject(new Error(label + " timed out after " + ms + "ms")),
+        ms
+      )
     ),
   ]);
 }
@@ -50,10 +57,16 @@ async function getConnection() {
 
 async function ensureTransport() {
   const conn = await getConnection();
-  const transport = document.getElementById("uv-transport")?.value || "epoxy";
+  const transport = document.getElementById("uv-transport")?.value || "bare";
   const url = wispUrl();
 
-  if (transport === "libcurl") {
+  if (transport === "bare") {
+    await withTimeout(
+      conn.setTransport("/baremod/index.mjs", [bareUrl()]),
+      15000,
+      "bare transport"
+    );
+  } else if (transport === "libcurl") {
     await withTimeout(
       conn.setTransport("/libcurl/index.mjs", [{ wisp: url }]),
       15000,
@@ -80,13 +93,12 @@ async function navigateTo(input) {
   setStatus("Setting up transport…");
 
   try {
-    // CRITICAL: transport before SW handles navigations
     await ensureTransport();
     setStatus("Registering service worker…");
     await registerSW();
   } catch (err) {
     setStatus("");
-    showError("Proxy setup failed. Try switching transport or Wisp endpoint.", err);
+    showError("Proxy setup failed. Try another transport.", err);
     throw err;
   }
 
@@ -110,20 +122,15 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
     await navigateTo(address.value);
-  } catch (_) {
-    /* shown already */
-  }
+  } catch (_) {}
 });
 
 document.querySelectorAll(".quick-link").forEach((btn) => {
   btn.addEventListener("click", async () => {
-    const url = btn.dataset.url;
-    address.value = url;
+    address.value = btn.dataset.url;
     try {
-      await navigateTo(url);
-    } catch (_) {
-      /* shown already */
-    }
+      await navigateTo(btn.dataset.url);
+    } catch (_) {}
   });
 });
 
@@ -137,7 +144,6 @@ document.getElementById("uv-home")?.addEventListener("click", () => {
   errorCode.textContent = "";
 });
 
-// Warm connection in background; never block the UI
 setStatus("Ready — enter a URL");
 getConnection()
   .then(() => ensureTransport())
@@ -152,7 +158,6 @@ const params = new URLSearchParams(location.search);
 const initialUrl = params.get("url");
 if (initialUrl) {
   address.value = initialUrl;
-  // Wait a tick so deferred scripts / DOM are settled
   setTimeout(() => {
     navigateTo(initialUrl).catch(() => {});
   }, 50);
