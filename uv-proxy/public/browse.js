@@ -6,10 +6,8 @@ const form = document.getElementById("browse-form");
 const address = document.getElementById("browse-address");
 const statusEl = document.getElementById("browse-status");
 
-let img = new Image();
+const img = new Image();
 let ws;
-let scaleX = 1;
-let scaleY = 1;
 
 function setStatus(msg) {
   statusEl.textContent = msg ? " — " + msg : "";
@@ -20,7 +18,7 @@ function connect() {
   ws = new WebSocket(proto + "://" + location.host + "/browse-ws");
 
   ws.addEventListener("open", () => setStatus("connected"));
-  ws.addEventListener("close", () => setStatus("disconnected — refresh"));
+  ws.addEventListener("close", () => setStatus("disconnected — refresh to reconnect"));
   ws.addEventListener("error", () => setStatus("socket error"));
 
   ws.addEventListener("message", (ev) => {
@@ -38,7 +36,8 @@ function connect() {
     } else if (msg.type === "ready") {
       setStatus("ready");
       const params = new URLSearchParams(location.search);
-      const url = params.get("url") || address.value || "https://www.redgifs.com";
+      const url =
+        params.get("url") || address.value || "https://www.redgifs.com";
       address.value = url;
       navigate(url);
     }
@@ -52,42 +51,40 @@ function navigate(url) {
 
 function coords(ev) {
   const rect = canvas.getBoundingClientRect();
-  const x = ((ev.clientX - rect.left) / rect.width) * canvas.width;
-  const y = ((ev.clientY - rect.top) / rect.height) * canvas.height;
-  return { x, y };
+  return {
+    x: ((ev.clientX - rect.left) / rect.width) * canvas.width,
+    y: ((ev.clientY - rect.top) / rect.height) * canvas.height,
+  };
 }
 
-canvas.addEventListener("mousedown", (ev) => {
+function send(msg) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+}
+
+canvas.addEventListener("pointerdown", (ev) => {
   ev.preventDefault();
+  canvas.setPointerCapture(ev.pointerId);
   const { x, y } = coords(ev);
-  ws?.send(
-    JSON.stringify({
-      type: "click",
-      x,
-      y,
-      button: ev.button === 2 ? "right" : "left",
-      clickCount: ev.detail || 1,
-    })
-  );
+  send({
+    type: "click",
+    x,
+    y,
+    button: ev.button === 2 ? "right" : "left",
+    clickCount: 1,
+  });
   canvas.focus();
 });
 
-canvas.addEventListener("mousemove", (ev) => {
+canvas.addEventListener("pointermove", (ev) => {
   const { x, y } = coords(ev);
-  ws?.send(JSON.stringify({ type: "move", x, y }));
+  send({ type: "move", x, y });
 });
 
 canvas.addEventListener(
   "wheel",
   (ev) => {
     ev.preventDefault();
-    ws?.send(
-      JSON.stringify({
-        type: "wheel",
-        deltaX: ev.deltaX,
-        deltaY: ev.deltaY,
-      })
-    );
+    send({ type: "wheel", deltaX: ev.deltaX, deltaY: ev.deltaY });
   },
   { passive: false }
 );
@@ -95,10 +92,10 @@ canvas.addEventListener(
 window.addEventListener("keydown", (ev) => {
   if (ev.target === address) return;
   ev.preventDefault();
-  if (ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey) {
-    ws?.send(JSON.stringify({ type: "type", text: ev.key }));
+  if (ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+    send({ type: "type", text: ev.key });
   } else {
-    ws?.send(JSON.stringify({ type: "press", key: ev.key }));
+    send({ type: "press", key: ev.key });
   }
 });
 
