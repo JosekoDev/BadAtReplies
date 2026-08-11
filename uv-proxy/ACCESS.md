@@ -2,15 +2,18 @@
 
 These URLs are active while the cloud agent session is running.
 
-## Primary (localtunnel)
+## Primary (Cloudflare — recommended)
+
+- **Homepage:** https://jacob-martin-moves-subjects.trycloudflare.com/
+- **RedGIFs (Browser mode):** https://jacob-martin-moves-subjects.trycloudflare.com/browse?url=https://www.redgifs.com
+- **Any URL (UV):** https://jacob-martin-moves-subjects.trycloudflare.com/?url=https://example.com
+
+## Backup (localtunnel)
 
 - **Homepage:** https://fruity-brooms-hope.loca.lt/
 - **RedGIFs (Browser mode):** https://fruity-brooms-hope.loca.lt/browse?url=https://www.redgifs.com
-- **Any URL (UV):** https://fruity-brooms-hope.loca.lt/?url=https://example.com
 
-### First visit note
-
-localtunnel may show a one-time **“Click to Continue”** / tunnel reminder page. Click through it, then reload if needed.
+localtunnel may show a one-time **“Click to Continue”** page on first visit.
 
 ## Quick test checklist
 
