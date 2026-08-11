@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+		/>
+		<title>Web Proxy | Ultraviolet</title>
+		<meta
+			name="description"
+			content="Ultraviolet web proxy — browse any URL through a service-worker proxy."
+		/>
+		<meta name="theme-color" content="#0b1220" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="stylesheet" href="/index.css" />
+		<script src="/baremux/index.js" defer></script>
+		<script src="/uv/uv.bundle.js" defer></script>
+		<script src="/uv/uv.config.js" defer></script>
+	</head>
+
+	<body>
+		<header class="topbar">
+			<button type="button" id="uv-home" class="home-btn" title="Back to start">
+				Proxy
+			</button>
+			<form id="uv-form" class="topbar-form">
+				<input
+					id="uv-search-engine"
+					value="https://www.google.com/search?q=%s"
+					type="hidden"
+				/>
+				<input
+					id="uv-address"
+					type="text"
+					placeholder="https://www.redgifs.com or any URL"
+					autocomplete="off"
+					spellcheck="false"
+				/>
+				<select id="uv-transport" title="Transport">
+					<option value="libcurl" selected>libcurl</option>
+					<option value="epoxy">epoxy</option>
+				</select>
+				<button type="submit" class="go-btn">Go</button>
+			</form>
+		</header>
+
+		<main class="landing" id="landing">
+			<div class="brand">
+				<img class="logo" src="/uv.png" alt="" />
+				<h1>Web Proxy</h1>
+				<p>
+					Powered by Ultraviolet. Paste any link — sites with heavy bot
+					protection may still block proxy access.
+				</p>
+			</div>
+
+			<div class="quick-links">
+				<button
+					type="button"
+					class="quick-link"
+					data-url="https://www.redgifs.com"
+				>
+					redgifs.com
+				</button>
+				<button type="button" class="quick-link" data-url="https://example.com">
+					example.com
+				</button>
+				<button
+					type="button"
+					class="quick-link"
+					data-url="https://www.wikipedia.org"
+				>
+					wikipedia.org
+				</button>
+			</div>
+
+			<p id="uv-status" class="status"></p>
+			<p id="uv-error"></p>
+			<pre id="uv-error-code"></pre>
+		</main>
+
+		<iframe title="Proxied site" style="display: none" id="uv-frame"></iframe>
+
+		<script src="/register-sw.js" defer></script>
+		<script src="/search.js" defer></script>
+		<script src="/index.js" defer></script>
+	</body>
+</html>

@@ -1,0 +1,191 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap");
+
+:root {
+	--bg0: #071018;
+	--bg1: #0e1a28;
+	--ink: #e8f0f7;
+	--muted: #8aa0b5;
+	--line: rgba(232, 240, 247, 0.14);
+	--accent: #3dd6c6;
+	--danger: #ff7b7b;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	min-height: 100%;
+}
+
+body {
+	font-family: "DM Sans", sans-serif;
+	color: var(--ink);
+	background:
+		radial-gradient(1200px 600px at 10% -10%, #16324a 0%, transparent 55%),
+		radial-gradient(900px 500px at 100% 0%, #0f3d36 0%, transparent 45%),
+		linear-gradient(180deg, var(--bg0), var(--bg1));
+	min-height: 100vh;
+}
+
+.topbar {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	padding: 10px 12px;
+	backdrop-filter: blur(10px);
+	background: rgba(7, 16, 24, 0.72);
+	border-bottom: 1px solid var(--line);
+}
+
+.home-btn,
+.go-btn,
+.quick-link {
+	font: inherit;
+	cursor: pointer;
+	border: 1px solid var(--line);
+	background: rgba(255, 255, 255, 0.04);
+	color: var(--ink);
+}
+
+.home-btn {
+	padding: 8px 12px;
+	border-radius: 8px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+
+.topbar-form {
+	display: flex;
+	flex: 1;
+	gap: 8px;
+	min-width: 0;
+}
+
+#uv-address {
+	flex: 1;
+	min-width: 0;
+	height: 40px;
+	padding: 0 14px;
+	border-radius: 10px;
+	border: 1px solid var(--line);
+	background: rgba(0, 0, 0, 0.25);
+	color: var(--ink);
+	outline: none;
+	font: inherit;
+}
+
+#uv-address:focus {
+	border-color: rgba(61, 214, 198, 0.55);
+}
+
+#uv-transport,
+.go-btn {
+	height: 40px;
+	border-radius: 10px;
+	padding: 0 12px;
+}
+
+.go-btn {
+	background: var(--accent);
+	color: #04201c;
+	border-color: transparent;
+	font-weight: 700;
+}
+
+.landing {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 12vh 20px 40px;
+	text-align: center;
+}
+
+.brand .logo {
+	width: 96px;
+	height: 96px;
+}
+
+.brand h1 {
+	margin: 12px 0 8px;
+	font-family: "Instrument Serif", serif;
+	font-size: clamp(2.4rem, 6vw, 3.6rem);
+	font-weight: 400;
+}
+
+.brand p {
+	margin: 0 auto;
+	max-width: 34rem;
+	color: var(--muted);
+	line-height: 1.5;
+}
+
+.quick-links {
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 28px;
+}
+
+.quick-link {
+	border-radius: 999px;
+	padding: 10px 16px;
+}
+
+.quick-link:hover,
+.home-btn:hover {
+	border-color: rgba(61, 214, 198, 0.45);
+}
+
+.status {
+	margin-top: 22px;
+	color: var(--muted);
+	min-height: 1.4em;
+}
+
+#uv-error {
+	color: var(--danger);
+	white-space: pre-wrap;
+}
+
+#uv-error-code {
+	font-size: 12px;
+	color: var(--muted);
+	font-family: ui-monospace, monospace;
+	white-space: pre-wrap;
+}
+
+#uv-frame {
+	border: none;
+	position: fixed;
+	top: 57px;
+	left: 0;
+	width: 100vw;
+	height: calc(100vh - 57px);
+	background: #000;
+	z-index: 10;
+}
+
+body.proxy-active .landing {
+	visibility: hidden;
+}
+
+@media (max-width: 640px) {
+	.topbar {
+		flex-wrap: wrap;
+	}
+
+	.topbar-form {
+		width: 100%;
+	}
+
+	#uv-frame {
+		top: 98px;
+		height: calc(100vh - 98px);
+	}
+}
