@@ -54,6 +54,9 @@ docker compose up -d
 | Shared memory | `1gb` (`shm_size`) — required for stable rendering of heavy pages |
 | Restart policy | `unless-stopped` |
 | Config volume | `./config` → `/config` (profile persistence) |
+| Scaling | `SELKIES_USE_CSS_SCALING=true` — stream follows the client viewport and fills the screen |
+
+In the Selkies sidebar (phone), open **Screen** settings or use **Fullscreen** if the stream does not fill the tab after rotate/resize.
 
 ### Equivalent `docker run`
 
