@@ -6,8 +6,15 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Etc/UTC}
+      # Leave MANUAL_* and USE_CSS_SCALING unset so Selkies matches the client viewport
+      - NO_DECOR=true
+      - SELKIES_FORCE_ALIGNED_RESOLUTION=true
+      - SELKIES_UI_SIDEBAR_SHOW_SCREEN_SETTINGS=true
+      - SELKIES_UI_SIDEBAR_SHOW_FULLSCREEN=true
     volumes:
       - ./config:/config
+      # Init copies this to ~/.config/labwc/rc.xml every start
+      - ./labwc.xml:/defaults/labwc.xml:ro
     ports:
       - "${HTTP_PORT:-3000}:3000"
       - "${HTTPS_PORT:-3001}:3001"
