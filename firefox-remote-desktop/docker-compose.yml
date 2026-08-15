@@ -6,15 +6,18 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Etc/UTC}
-      # Leave MANUAL_* and USE_CSS_SCALING unset so Selkies matches the client viewport
+      # X11 so manual resolution sticks
+      - PIXELFLUX_WAYLAND=false
+      # iPhone 17 Pro Max logical viewport (CSS points)
+      - SELKIES_MANUAL_WIDTH=440
+      - SELKIES_MANUAL_HEIGHT=956
+      - SELKIES_IS_MANUAL_RESOLUTION_MODE=true
+      - SELKIES_SCALING_DPI=160
       - NO_DECOR=true
-      - SELKIES_FORCE_ALIGNED_RESOLUTION=true
       - SELKIES_UI_SIDEBAR_SHOW_SCREEN_SETTINGS=true
       - SELKIES_UI_SIDEBAR_SHOW_FULLSCREEN=true
     volumes:
       - ./config:/config
-      # Init copies this to ~/.config/labwc/rc.xml every start
-      - ./labwc.xml:/defaults/labwc.xml:ro
     ports:
       - "${HTTP_PORT:-3000}:3000"
       - "${HTTPS_PORT:-3001}:3001"
