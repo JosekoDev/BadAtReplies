@@ -28,7 +28,7 @@ sleep 6
 
 # Hard-lock iPhone viewport + copy UI in case service raced X
 docker exec firefox-novnc bash -lc '
-  selkies-resize 440x956 >/dev/null 2>&1 || true
+  selkies-resize 500x1086 >/dev/null 2>&1 || true
   cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html /usr/share/novnc/ 2>/dev/null || true
   pgrep -a x11vnc || true
   pgrep -a websockify || true

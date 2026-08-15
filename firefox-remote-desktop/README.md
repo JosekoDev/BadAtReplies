@@ -93,7 +93,7 @@ Selkies on `:3001` feels like a PC remote. For phones, use **phone.html** (one-f
 - Compose: [`docker-compose.novnc.yml`](./docker-compose.novnc.yml)
 - Guide: [`NOVNC.md`](./NOVNC.md)
 - Deploy: `./deploy-novnc.sh`
-- Open: `http://<tailscale-ip>:5800/` (440×956 iPhone viewport)
+- Open: `http://<tailscale-ip>:5800/` (500×1086 iPhone viewport)
 
 ## 3. Client access (Tailscale)
 

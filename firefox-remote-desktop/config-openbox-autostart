@@ -1,0 +1,5 @@
+#!/bin/bash
+# Phone kiosk: must be fullscreen so width matches the 440px X display
+# (normal Firefox refuses to go below ~500px, which clips the right edge).
+export MOZ_FORCE_DISABLE_E10S=
+exec /usr/bin/firefox --kiosk ${FIREFOX_CLI}

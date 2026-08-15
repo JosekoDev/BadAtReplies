@@ -12,7 +12,9 @@ Selkies (`:3001`) stays available as a fallback, but phones should use **phone.h
 
 ## Size
 
-Locked to **iPhone 17 Pro Max** CSS viewport: **440 × 956**.
+Locked to **500 × 1086** (same tall aspect as iPhone 17 Pro Max’s 440×956).
+
+Firefox refuses windows narrower than ~500px, so a 440-wide display clipped the right edge. The phone UI scales this to fit your screen with nothing cut off.
 
 ## Open on your phone (Tailscale)
 

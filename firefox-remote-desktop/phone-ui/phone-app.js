@@ -30,7 +30,7 @@ const rfb = new RFB(screenEl, target(), {
   shared: true,
   wsProtocols: ["binary"],
 });
-rfb.scaleViewport = true;
+rfb.scaleViewport = true; // contain-fit (never crop)
 rfb.resizeSession = false;
 rfb.clipViewport = false;
 rfb.showDotCursor = false;
@@ -39,6 +39,16 @@ rfb.dragViewport = false;
 rfb.qualityLevel = 6;
 rfb.compressionLevel = 2;
 
+function ensureContainFit() {
+  rfb.scaleViewport = true;
+  rfb.clipViewport = false;
+  try {
+    rfb._updateScale();
+  } catch (_) {
+    /* ignore */
+  }
+}
+
 rfb.addEventListener("connect", () => {
   // Stock noVNC maps 1-finger drag → mouse drag (PC remote). Kill that.
   try {
@@ -46,9 +56,12 @@ rfb.addEventListener("connect", () => {
   } catch (_) {
     /* ignore */
   }
+  ensureContainFit();
+  requestAnimationFrame(ensureContainFit);
   setStatus("");
   hideChromeHints();
 });
+window.addEventListener("resize", ensureContainFit);
 rfb.addEventListener("disconnect", (e) => {
   setStatus(e.detail.clean ? "Disconnected — tap to reload" : "Lost connection — tap to reload", {
     clickable: true,

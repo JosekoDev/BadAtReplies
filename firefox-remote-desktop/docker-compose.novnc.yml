@@ -16,8 +16,10 @@ services:
       - PGID=1000
       - TZ=${TZ:-Etc/UTC}
       - PIXELFLUX_WAYLAND=false
-      - SELKIES_MANUAL_WIDTH=440
-      - SELKIES_MANUAL_HEIGHT=956
+      # Firefox hard-mins ~500px wide; 440 clipped the right edge.
+      # 500×1086 keeps the same tall phone aspect as 440×956.
+      - SELKIES_MANUAL_WIDTH=500
+      - SELKIES_MANUAL_HEIGHT=1086
       - SELKIES_IS_MANUAL_RESOLUTION_MODE=true
       - NO_DECOR=true
     volumes:
