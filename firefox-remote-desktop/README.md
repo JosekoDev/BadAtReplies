@@ -86,6 +86,15 @@ docker compose pull && docker compose up -d
 docker compose down
 ```
 
+## Mobile access (recommended): noVNC
+
+Selkies on `:3001` is desktop-oriented. For phones, use the **noVNC** stack:
+
+- Compose: [`docker-compose.novnc.yml`](./docker-compose.novnc.yml)
+- Guide: [`NOVNC.md`](./NOVNC.md)
+- Deploy: `./deploy-novnc.sh`
+- Open: `http://<tailscale-ip>:5800` (iPhone 17 Pro Max size 440×956)
+
 ## 3. Client access (Tailscale)
 
 1. Ensure the **homelab host** and the **client device** are authenticated and connected to the same Tailscale mesh (`tailscale status` on both).
