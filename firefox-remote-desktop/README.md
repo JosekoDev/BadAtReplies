@@ -82,19 +82,6 @@ docker compose pull && docker compose up -d
 docker compose down
 ```
 
-## Mobile-friendly mode
-
-The Compose stack includes Selkies mobile tweaks:
-
-- Dynamic scaling (`SELKIES_USE_CSS_SCALING`) so the stream fits the phone viewport
-- Injected `mobile/mobile-enhancements.js` that:
-  - Fills the screen (`viewport-fit=cover`)
-  - Auto-opens the **native** phone keyboard when you tap the stream (`Type: On`)
-  - Adds floating **Keyboard** / **Type: On|Off** controls
-- Optional Firefox `user.js` (see `config/user.js.example`) with a mobile user-agent so websites render in mobile layout
-
-Hard refresh the page after updates. Use HTTPS: `https://<tailscale-ip>:3001`.
-
 ## 3. Client access (Tailscale)
 
 1. Ensure the **homelab host** and the **client device** are authenticated and connected to the same Tailscale mesh (`tailscale status` on both).
