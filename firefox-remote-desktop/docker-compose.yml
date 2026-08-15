@@ -6,12 +6,6 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Etc/UTC}
-      # Dynamic scaling: follow client viewport (CSS pixels) and stretch to fill
-      - SELKIES_USE_CSS_SCALING=true
-      - SELKIES_FORCE_ALIGNED_RESOLUTION=true
-      - SELKIES_UI_SIDEBAR_SHOW_SCREEN_SETTINGS=true
-      - SELKIES_UI_SIDEBAR_SHOW_FULLSCREEN=true
-      # Do not set SELKIES_MANUAL_WIDTH/HEIGHT — that locks resolution
     volumes:
       - ./config:/config
     ports:
