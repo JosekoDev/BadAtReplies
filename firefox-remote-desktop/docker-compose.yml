@@ -1,27 +1,25 @@
-# Homelab Remote Web Desktop — LinuxServer Firefox
-# Access over Tailscale: http://<tailscale-ip>:3000
-#
-# Start:  docker compose up -d
-# Stop:   docker compose down
-# Logs:   docker compose logs -f firefox
-
 services:
   firefox:
-    image: lscr.io/linuxserver/firefox:latest
+    image: ghcr.io/linuxserver/firefox:latest
     container_name: firefox-remote-desktop
     environment:
       - PUID=${PUID:-1000}
       - PGID=${PGID:-1000}
       - TZ=${TZ:-Etc/UTC}
-      # Optional: open a URL (or pass Firefox CLI flags) on launch
-      # - FIREFOX_CLI=https://example.com
+      # Dynamic client-driven resolution (fits the phone viewport)
+      - SELKIES_USE_CSS_SCALING=true
+      - SELKIES_SCALING_DPI=192
+      - SELKIES_UI_SIDEBAR_SHOW_KEYBOARD_BUTTON=true
+      - SELKIES_UI_SIDEBAR_SHOW_TRACKPAD=true
+      - SELKIES_UI_SIDEBAR_SHOW_SOFT_BUTTONS=true
+      - SELKIES_UI_SIDEBAR_SHOW_FULLSCREEN=true
+      - SELKIES_UI_SHOW_SIDEBAR=true
     volumes:
-      # Persist profile, bookmarks, downloads, and settings
       - ./config:/config
+      - ./mobile/index.html:/usr/share/selkies/web/index.html:ro
+      - ./mobile/mobile-enhancements.js:/usr/share/selkies/web/mobile-enhancements.js:ro
     ports:
-      # HTTP KasmVNC desktop — use over Tailscale mesh
       - "${HTTP_PORT:-3000}:3000"
-      # HTTPS endpoint (optional; useful if not on a private mesh)
       - "${HTTPS_PORT:-3001}:3001"
     shm_size: "1gb"
     restart: unless-stopped
