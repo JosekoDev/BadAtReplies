@@ -1,0 +1,27 @@
+# Homelab Remote Web Desktop — LinuxServer Firefox
+# Access over Tailscale: http://<tailscale-ip>:3000
+#
+# Start:  docker compose up -d
+# Stop:   docker compose down
+# Logs:   docker compose logs -f firefox
+
+services:
+  firefox:
+    image: lscr.io/linuxserver/firefox:latest
+    container_name: firefox-remote-desktop
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Etc/UTC}
+      # Optional: open a URL (or pass Firefox CLI flags) on launch
+      # - FIREFOX_CLI=https://example.com
+    volumes:
+      # Persist profile, bookmarks, downloads, and settings
+      - ./config:/config
+    ports:
+      # HTTP KasmVNC desktop — use over Tailscale mesh
+      - "${HTTP_PORT:-3000}:3000"
+      # HTTPS endpoint (optional; useful if not on a private mesh)
+      - "${HTTPS_PORT:-3001}:3001"
+    shm_size: "1gb"
+    restart: unless-stopped
