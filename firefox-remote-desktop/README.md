@@ -54,6 +54,9 @@ docker compose up -d
 | Shared memory | `1gb` (`shm_size`) — required for stable rendering of heavy pages |
 | Restart policy | `unless-stopped` |
 | Config volume | `./config` → `/config` (profile persistence) |
+| Fit to client | Selkies matches the opening browser viewport; Firefox is forced fullscreen via `labwc.xml` |
+
+If the stream does not fill your phone after open/rotate: Selkies sidebar → **Screen** → turn **off** manual resolution, then use **Fullscreen**.
 
 
 ### Equivalent `docker run`
