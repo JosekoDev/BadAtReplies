@@ -1,0 +1,26 @@
+# Firefox in noVNC (mobile-friendly) — iPhone 17 Pro Max viewport
+# Access over Tailscale: http://100.82.108.108:5800
+#
+# Replaces Selkies web UI with jlesage's nginx+noVNC front-end.
+
+services:
+  firefox:
+    image: jlesage/firefox:latest
+    container_name: firefox-novnc
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+      # iPhone 17 Pro Max CSS viewport
+      - DISPLAY_WIDTH=440
+      - DISPLAY_HEIGHT=956
+      - DARK_MODE=0
+      - KEEP_APP_RUNNING=1
+      - WEB_AUDIO=1
+      # Optional: set a VNC password
+      # - VNC_PASSWORD=changeme
+    volumes:
+      - ./novnc-config:/config:rw
+    ports:
+      - "${WEB_PORT:-5800}:5800"   # noVNC web UI
+      - "${VNC_PORT:-5900}:5900"   # raw VNC (optional)
+    shm_size: "1gb"
+    restart: unless-stopped
