@@ -1,0 +1,37 @@
+<labwc_config>
+  <core>
+    <decoration>server</decoration>
+    <gap>0</gap>
+  </core>
+  <theme>
+    <name>Clearlooks</name>
+    <titlebar>
+      <layout></layout>
+      <showTitle>no</showTitle>
+    </titlebar>
+    <cornerRadius>0</cornerRadius>
+  </theme>
+  <keyboard>
+    <default />
+  </keyboard>
+  <mouse>
+    <default />
+  </mouse>
+  <windowRules>
+    <windowRule identifier="*">
+      <action name="Maximize" />
+    </windowRule>
+    <windowRule identifier="firefox" serverDecoration="no">
+      <action name="Maximize" />
+      <action name="Fullscreen" />
+    </windowRule>
+    <windowRule identifier="firefox-esr" serverDecoration="no">
+      <action name="Maximize" />
+      <action name="Fullscreen" />
+    </windowRule>
+    <windowRule identifier="Navigator" serverDecoration="no">
+      <action name="Maximize" />
+      <action name="Fullscreen" />
+    </windowRule>
+  </windowRules>
+</labwc_config>
