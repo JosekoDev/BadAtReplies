@@ -1,0 +1,33 @@
+/* Phone kiosk: hide desktop Firefox chrome; phone.html provides nav. */
+#TabsToolbar,
+#titlebar,
+#PersonalToolbar,
+#sidebar-box,
+#sidebar-header,
+#statuspanel,
+#navigator-toolbox,
+toolbox#navigator-toolbox {
+  display: none !important;
+  visibility: collapse !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+#navigator-toolbox {
+  --tabs-navbar-shadow-size: 0 !important;
+}
+
+browser,
+#tabbrowser-tabpanels,
+#appcontent,
+#content,
+#browser {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#main-window {
+  --chrome-content-separator-color: transparent !important;
+}

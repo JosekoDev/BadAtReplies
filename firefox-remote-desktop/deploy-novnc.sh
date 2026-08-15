@@ -1,45 +1,41 @@
 #!/usr/bin/env bash
-# Deploy Firefox + noVNC on the homelab (run ON the server as joseko).
+# Deploy / refresh phone-mode Firefox on the homelab (run ON joseko).
 set -euo pipefail
 BASE="${HOME}/firefox-remote-desktop"
-mkdir -p "$BASE/novnc-config"
 cd "$BASE"
 
-# Stop old Selkies stack if present
+chmod +x custom-cont-init.d/* custom-services.d/* 2>/dev/null || true
+
+# Stop older container name if present
 if docker ps -a --format '{{.Names}}' | grep -qx firefox-remote-desktop; then
   docker stop firefox-remote-desktop >/dev/null 2>&1 || true
   docker rm firefox-remote-desktop >/dev/null 2>&1 || true
 fi
 
-# Prefer compose file from this folder
-if [ ! -f docker-compose.novnc.yml ]; then
-  cat > docker-compose.novnc.yml << 'EOF'
-services:
-  firefox:
-    image: jlesage/firefox:latest
-    container_name: firefox-novnc
-    environment:
-      - TZ=Etc/UTC
-      - DISPLAY_WIDTH=440
-      - DISPLAY_HEIGHT=956
-      - DARK_MODE=0
-      - KEEP_APP_RUNNING=1
-      - WEB_AUDIO=1
-    volumes:
-      - ./novnc-config:/config:rw
-    ports:
-      - "5800:5800"
-      - "5900:5900"
-    shm_size: "1gb"
-    restart: unless-stopped
-EOF
+# Ensure local image exists (x11vnc + novnc baked in)
+if ! docker image inspect firefox-novnc-phone:local >/dev/null 2>&1; then
+  if docker ps -a --format '{{.Names}}' | grep -qx firefox-novnc; then
+    echo "Creating firefox-novnc-phone:local from running container…"
+    docker commit firefox-novnc firefox-novnc-phone:local
+  else
+    echo "ERROR: need firefox-novnc-phone:local (or a running firefox-novnc to commit)." >&2
+    exit 1
+  fi
 fi
 
-docker compose -f docker-compose.novnc.yml pull
 docker compose -f docker-compose.novnc.yml up -d
-sleep 5
-docker compose -f docker-compose.novnc.yml ps
-curl -s -o /dev/null -w "novnc_http=%{http_code}\n" http://127.0.0.1:5800/ || true
+sleep 6
+
+# Hard-lock iPhone viewport + copy UI in case service raced X
+docker exec firefox-novnc bash -lc '
+  selkies-resize 440x956 >/dev/null 2>&1 || true
+  cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html /usr/share/novnc/ 2>/dev/null || true
+  pgrep -a x11vnc || true
+  pgrep -a websockify || true
+'
+
+curl -s -o /dev/null -w "phone=%{http_code}\n" http://127.0.0.1:5800/phone.html || true
 echo
-echo "Open on your phone (Tailscale): http://100.82.108.108:5800"
-echo "Use the noVNC fullscreen control for best mobile fit."
+echo "Phone UI: http://100.82.108.108:5800/"
+echo "          http://100.82.108.108:5800/phone.html"
+echo "Swipe scrolls · tap clicks · top bar navigates · ⌨ for typing"

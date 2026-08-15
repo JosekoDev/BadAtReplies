@@ -1,0 +1,42 @@
+#!/usr/bin/with-contenv bash
+# Keep VNC + websockify up for phone.html (beside Selkies on :3001).
+# linuxserver expects a FILE in /custom-services.d (not a directory).
+set -euo pipefail
+
+DISPLAY_NUM="${DISPLAY:-:1}"
+RFB_PORT="${RFB_PORT:-5900}"
+WEB_PORT="${WEB_PORT:-5800}"
+NOVNC_WEB="${NOVNC_WEB:-/usr/share/novnc}"
+WIDTH="${SELKIES_MANUAL_WIDTH:-440}"
+HEIGHT="${SELKIES_MANUAL_HEIGHT:-956}"
+
+# Wait for X owned by abc
+for _ in $(seq 1 90); do
+  if su -s /bin/bash abc -c "DISPLAY=$DISPLAY_NUM xdpyinfo" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+
+if command -v selkies-resize >/dev/null 2>&1; then
+  su -s /bin/bash abc -c "selkies-resize ${WIDTH}x${HEIGHT}" >/dev/null 2>&1 || true
+fi
+
+if [[ -d /phone-ui ]]; then
+  cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html "$NOVNC_WEB/" 2>/dev/null || true
+fi
+
+if ! command -v x11vnc >/dev/null 2>&1 || ! command -v websockify >/dev/null 2>&1; then
+  echo "[novnc] x11vnc/websockify missing — bake into firefox-novnc-phone:local" >&2
+  exec sleep infinity
+fi
+
+pkill -f "x11vnc -display" >/dev/null 2>&1 || true
+pkill -f "websockify --web=${NOVNC_WEB}" >/dev/null 2>&1 || true
+sleep 1
+
+# Must run x11vnc as abc (X authority / MIT-SHM)
+su -s /bin/bash abc -c \
+  "x11vnc -display ${DISPLAY_NUM} -forever -shared -rfbport ${RFB_PORT} -nopw -xkb -bg -o /tmp/x11vnc.log"
+
+exec websockify --web="$NOVNC_WEB" "0.0.0.0:${WEB_PORT}" "127.0.0.1:${RFB_PORT}"

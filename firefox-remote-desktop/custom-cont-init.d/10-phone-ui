@@ -1,0 +1,30 @@
+#!/usr/bin/with-contenv bash
+# Install phone-mode noVNC UI + ensure Firefox profile chrome prefs.
+set -euo pipefail
+
+NOVNC_WEB="${NOVNC_WEB:-/usr/share/novnc}"
+PHONE_SRC="${PHONE_SRC:-/phone-ui}"
+PROF_ROOT="/config/.config/mozilla/firefox"
+
+if [[ -d "$PHONE_SRC" && -d "$NOVNC_WEB" ]]; then
+  cp -f "$PHONE_SRC/phone.html" "$PHONE_SRC/phone-app.js" "$PHONE_SRC/index.html" "$NOVNC_WEB/" 2>/dev/null || true
+  echo "[phone-ui] installed into $NOVNC_WEB"
+fi
+
+# Apply mobile prefs / userChrome to every Firefox profile present
+if [[ -d "$PROF_ROOT" ]]; then
+  shopt -s nullglob
+  for pref in "$PROF_ROOT"/*/prefs.js; do
+    dir="$(dirname "$pref")"
+    if [[ -f "$PHONE_SRC/user.js" ]]; then
+      cp -f "$PHONE_SRC/user.js" "$dir/user.js"
+    fi
+    mkdir -p "$dir/chrome"
+    if [[ -f "$PHONE_SRC/chrome/userChrome.css" ]]; then
+      cp -f "$PHONE_SRC/chrome/userChrome.css" "$dir/chrome/userChrome.css"
+    elif [[ -f "$PHONE_SRC/userChrome.css" ]]; then
+      cp -f "$PHONE_SRC/userChrome.css" "$dir/chrome/userChrome.css"
+    fi
+  done
+  echo "[phone-ui] Firefox user.js / userChrome applied"
+fi

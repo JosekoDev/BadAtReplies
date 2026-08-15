@@ -1,0 +1,14 @@
+user_pref("general.useragent.override", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1");
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("browser.tabs.inTitlebar", 0);
+user_pref("browser.toolbars.bookmarks.visibility", "never");
+user_pref("dom.w3c_touch_events.enabled", 1);
+user_pref("apz.allow_zooming", true);
+user_pref("devtools.responsive.touchSimulation.enabled", true);
+user_pref("full-screen-api.ignore-widgets", true);
+user_pref("browser.uidensity", 1);
+user_pref("browser.startup.homepage", "https://example.com");
+user_pref("browser.sessionstore.resume_from_crash", false);
+user_pref("browser.tabs.warnOnClose", false);
+user_pref("browser.aboutwelcome.enabled", false);
+user_pref("browser.shell.checkDefaultBrowser", false);

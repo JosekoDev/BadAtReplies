@@ -1,26 +1,32 @@
-# Firefox in noVNC (mobile-friendly) — iPhone 17 Pro Max viewport
-# Access over Tailscale: http://100.82.108.108:5800
+# Phone-mode Firefox over Tailscale (noVNC + native touch UI)
+# Open: http://100.82.108.108:5800/  → phone.html
+# Fallback Selkies UI: :3001
 #
-# Replaces Selkies web UI with jlesage's nginx+noVNC front-end.
+# Image notes:
+# - Prefer local committed image `firefox-novnc-phone:local` (has x11vnc/novnc).
+# - Falls back to ghcr.io/linuxserver/firefox:latest if local image missing.
 
 services:
   firefox:
-    image: jlesage/firefox:latest
+    image: firefox-novnc-phone:local
+    pull_policy: never
     container_name: firefox-novnc
     environment:
+      - PUID=1000
+      - PGID=1000
       - TZ=${TZ:-Etc/UTC}
-      # iPhone 17 Pro Max CSS viewport
-      - DISPLAY_WIDTH=440
-      - DISPLAY_HEIGHT=956
-      - DARK_MODE=0
-      - KEEP_APP_RUNNING=1
-      - WEB_AUDIO=1
-      # Optional: set a VNC password
-      # - VNC_PASSWORD=changeme
+      - PIXELFLUX_WAYLAND=false
+      - SELKIES_MANUAL_WIDTH=440
+      - SELKIES_MANUAL_HEIGHT=956
+      - SELKIES_IS_MANUAL_RESOLUTION_MODE=true
+      - NO_DECOR=true
     volumes:
-      - ./novnc-config:/config:rw
+      - ./config:/config
+      - ./phone-ui:/phone-ui:ro
+      - ./custom-cont-init.d:/custom-cont-init.d:ro
+      - ./custom-services.d:/custom-services.d:ro
     ports:
-      - "${WEB_PORT:-5800}:5800"   # noVNC web UI
-      - "${VNC_PORT:-5900}:5900"   # raw VNC (optional)
+      - "${WEB_PORT:-5800}:5800"
+      - "${SELKIES_PORT:-3001}:3001"
     shm_size: "1gb"
     restart: unless-stopped

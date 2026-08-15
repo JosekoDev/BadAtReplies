@@ -86,14 +86,14 @@ docker compose pull && docker compose up -d
 docker compose down
 ```
 
-## Mobile access (recommended): noVNC
+## Mobile access (recommended): phone-mode noVNC
 
-Selkies on `:3001` is desktop-oriented. For phones, use the **noVNC** stack:
+Selkies on `:3001` feels like a PC remote. For phones, use **phone.html** (one-finger scroll, tap, URL bar):
 
 - Compose: [`docker-compose.novnc.yml`](./docker-compose.novnc.yml)
 - Guide: [`NOVNC.md`](./NOVNC.md)
 - Deploy: `./deploy-novnc.sh`
-- Open: `http://<tailscale-ip>:5800` (iPhone 17 Pro Max size 440×956)
+- Open: `http://<tailscale-ip>:5800/` (440×956 iPhone viewport)
 
 ## 3. Client access (Tailscale)
 

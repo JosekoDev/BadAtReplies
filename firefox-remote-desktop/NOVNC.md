@@ -1,35 +1,47 @@
-# Firefox via noVNC (mobile)
+# Firefox phone mode (noVNC)
 
-Selkies’ web client is awkward on phones. This stack uses **jlesage/firefox**, which serves Firefox through **nginx + noVNC** in the browser.
+Real Firefox on the homelab, streamed to your phone with **native-feeling touch**:
+
+- one-finger swipe → scroll (not cursor drag)
+- tap → click
+- hold → right-click / context menu
+- top bar → back + URL (paste into Firefox)
+- ⌨ → type via paste
+
+Selkies (`:3001`) stays available as a fallback, but phones should use **phone.html**.
 
 ## Size
 
-Locked to **iPhone 17 Pro Max** viewport: **440 × 956**.
+Locked to **iPhone 17 Pro Max** CSS viewport: **440 × 956**.
 
-## Deploy on the homelab
+## Open on your phone (Tailscale)
+
+```text
+http://100.82.108.108:5800/
+```
+
+Add to Home Screen for an app-like shell.
+
+## Deploy / refresh on the homelab
 
 ```bash
 cd ~/firefox-remote-desktop
-# If you have the latest repo branch:
-git fetch origin && git checkout cursor/firefox-remote-desktop-b3c2 && git pull
-
 chmod +x deploy-novnc.sh
 ./deploy-novnc.sh
 ```
 
-Or:
+Uses local image `firefox-novnc-phone:local` (linuxserver Firefox + x11vnc/websockify).
+First-time bake from a working container:
 
 ```bash
-cd ~/firefox-remote-desktop
-docker compose -f docker-compose.novnc.yml up -d
+docker commit firefox-novnc firefox-novnc-phone:local
 ```
 
-## Open on your phone
+## Files
 
-```text
-http://100.82.108.108:5800
-```
-
-Tips:
-- In noVNC, use **fullscreen** / stretch for best fit
-- Old Selkies URL (`:3001`) is stopped by `deploy-novnc.sh`
+| Path | Role |
+| --- | --- |
+| `phone-ui/phone.html` + `phone-app.js` | Phone shell + gesture mapping |
+| `phone-ui/user.js` / `chrome/userChrome.css` | Mobile UA + hide desktop Firefox chrome |
+| `custom-cont-init.d/10-phone-ui` | Install UI into `/usr/share/novnc` on boot |
+| `custom-services.d/novnc` | Keep x11vnc + websockify on `:5800` (must be a file) |
