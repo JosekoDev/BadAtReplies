@@ -245,7 +245,8 @@ waitCanvas().then((canvas) => {
       accumX += p.x - lastX;
       while (Math.abs(accumY) >= WHEEL_LINE) {
         const step = accumY > 0 ? WHEEL_LINE : -WHEEL_LINE;
-        sendWheel(p.x, p.y, 0, step);
+        // Invert vertical only: finger down → content down (natural phone scroll)
+        sendWheel(p.x, p.y, 0, -step);
         accumY -= step;
       }
       while (Math.abs(accumX) >= WHEEL_LINE) {
