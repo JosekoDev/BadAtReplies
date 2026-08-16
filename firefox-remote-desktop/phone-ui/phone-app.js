@@ -326,8 +326,9 @@ async function clearBrowsingHistory() {
 document.getElementById("clear").addEventListener("click", () => clearBrowsingHistory());
 
 document.getElementById("video").addEventListener("click", () => {
-  // Selkies H.264 — actually capable of ~60fps video; VNC is not.
+  // Selkies H.264 over HTTPS — actually capable of ~60fps video; VNC is not.
   const u = new URL(location.href);
+  u.protocol = "https:";
   u.port = "3001";
   u.pathname = "/";
   u.search = "";
