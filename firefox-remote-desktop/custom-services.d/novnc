@@ -40,8 +40,9 @@ pkill -f "phone-gateway.py" >/dev/null 2>&1 || true
 sleep 1
 
 # Must run x11vnc as abc (X authority / MIT-SHM)
+# ~60fps: poll/defer ≈ 16ms (default 20ms is closer to ~50)
 su -s /bin/bash abc -c \
-  "x11vnc -display ${DISPLAY_NUM} -forever -shared -rfbport ${RFB_PORT} -nopw -xkb -bg -o /tmp/x11vnc.log"
+  "x11vnc -display ${DISPLAY_NUM} -forever -shared -rfbport ${RFB_PORT} -nopw -xkb -wait 16 -defer 16 -bg -o /tmp/x11vnc.log"
 
 export DISPLAY="$DISPLAY_NUM"
 export NOVNC_WEB
