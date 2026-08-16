@@ -304,6 +304,26 @@ urlEl.addEventListener("keydown", (e) => {
   }
 });
 
+async function clearBrowsingHistory() {
+  if (!confirm("Clear all browsing history, cookies, and cache?")) return;
+  setStatus("Clearing…");
+  try {
+    const res = await fetch("/api/clear-history", { method: "POST" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+    setStatus("Cleared — reconnecting…");
+    setTimeout(() => location.reload(), 1200);
+  } catch (err) {
+    setStatus("Clear failed — tap to dismiss", { clickable: true });
+    statusEl.onclick = () => setStatus("");
+    console.error(err);
+  }
+}
+
+document.getElementById("clear").addEventListener("click", () => clearBrowsingHistory());
+
 document.getElementById("kbd").addEventListener("click", () => {
   kbEl.classList.add("open");
   setTimeout(() => typebox.focus(), 50);

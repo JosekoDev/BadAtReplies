@@ -29,13 +29,13 @@ sleep 6
 # Hard-lock iPhone viewport + copy UI in case service raced X
 docker exec firefox-novnc bash -lc '
   selkies-resize 500x1086 >/dev/null 2>&1 || true
-  cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html /usr/share/novnc/ 2>/dev/null || true
+  cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html /phone-ui/phone-gateway.py /usr/share/novnc/ 2>/dev/null || true
   pgrep -a x11vnc || true
-  pgrep -a websockify || true
+  pgrep -af "phone-gateway|websockify" || true
 '
 
-curl -s -o /dev/null -w "phone=%{http_code}\n" http://127.0.0.1:5800/phone.html || true
+curl -s -o /dev/null -w "phone=%{http_code}\n" http://127.0.0.1:5000/phone.html || true
 echo
-echo "Phone UI: http://100.82.108.108:5800/"
-echo "          http://100.82.108.108:5800/phone.html"
-echo "Swipe scrolls · tap clicks · top bar navigates · ⌨ for typing"
+echo "Phone UI: http://100.82.108.108:5000/"
+echo "          http://100.82.108.108:5000/phone.html"
+echo "Swipe scrolls · tap clicks · top bar navigates · Clear wipes history · ⌨ for typing"

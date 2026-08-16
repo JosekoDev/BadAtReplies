@@ -19,8 +19,10 @@ Firefox refuses windows narrower than ~500px, so a 440-wide display clipped the 
 ## Open on your phone (Tailscale)
 
 ```text
-http://100.82.108.108:5800/
+http://100.82.108.108:5000/
 ```
+
+Hard-refresh after updates. Use **Clear** in the top bar to wipe history/cookies/cache.
 
 Add to Home Screen for an app-like shell.
 
@@ -45,5 +47,6 @@ docker commit firefox-novnc firefox-novnc-phone:local
 | --- | --- |
 | `phone-ui/phone.html` + `phone-app.js` | Phone shell + gesture mapping |
 | `phone-ui/user.js` / `chrome/userChrome.css` | Mobile UA + hide desktop Firefox chrome |
+| `phone-ui/phone-gateway.py` | Port 5000 websockify + `POST /api/clear-history` |
 | `custom-cont-init.d/10-phone-ui` | Install UI into `/usr/share/novnc` on boot |
-| `custom-services.d/novnc` | Keep x11vnc + websockify on `:5800` (must be a file) |
+| `custom-services.d/novnc` | Keep x11vnc + phone gateway on `:5000` (must be a file) |

@@ -1,14 +1,15 @@
 #!/usr/bin/with-contenv bash
-# Keep VNC + websockify up for phone.html (beside Selkies on :3001).
+# Phone UI on :5000 (websockify + clear-history API) beside Selkies on :3001.
 # linuxserver expects a FILE in /custom-services.d (not a directory).
 set -euo pipefail
 
 DISPLAY_NUM="${DISPLAY:-:1}"
 RFB_PORT="${RFB_PORT:-5900}"
-WEB_PORT="${WEB_PORT:-5800}"
+WEB_PORT="${WEB_PORT:-5000}"
 NOVNC_WEB="${NOVNC_WEB:-/usr/share/novnc}"
 WIDTH="${SELKIES_MANUAL_WIDTH:-500}"
 HEIGHT="${SELKIES_MANUAL_HEIGHT:-1086}"
+GATEWAY="/phone-ui/phone-gateway.py"
 
 # Wait for X owned by abc
 for _ in $(seq 1 90); do
@@ -24,6 +25,8 @@ fi
 
 if [[ -d /phone-ui ]]; then
   cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html "$NOVNC_WEB/" 2>/dev/null || true
+  cp -f /phone-ui/phone-gateway.py "$NOVNC_WEB/phone-gateway.py" 2>/dev/null || true
+  chmod +x "$NOVNC_WEB/phone-gateway.py" /phone-ui/phone-gateway.py 2>/dev/null || true
 fi
 
 if ! command -v x11vnc >/dev/null 2>&1 || ! command -v websockify >/dev/null 2>&1; then
@@ -33,10 +36,19 @@ fi
 
 pkill -f "x11vnc -display" >/dev/null 2>&1 || true
 pkill -f "websockify --web=${NOVNC_WEB}" >/dev/null 2>&1 || true
+pkill -f "phone-gateway.py" >/dev/null 2>&1 || true
 sleep 1
 
 # Must run x11vnc as abc (X authority / MIT-SHM)
 su -s /bin/bash abc -c \
   "x11vnc -display ${DISPLAY_NUM} -forever -shared -rfbport ${RFB_PORT} -nopw -xkb -bg -o /tmp/x11vnc.log"
 
+export DISPLAY="$DISPLAY_NUM"
+export NOVNC_WEB
+export PHONE_LISTEN="0.0.0.0:${WEB_PORT}"
+export VNC_TARGET="127.0.0.1:${RFB_PORT}"
+
+if [[ -f "$GATEWAY" ]]; then
+  exec python3 "$GATEWAY"
+fi
 exec websockify --web="$NOVNC_WEB" "0.0.0.0:${WEB_PORT}" "127.0.0.1:${RFB_PORT}"

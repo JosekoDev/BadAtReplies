@@ -46,6 +46,13 @@
       font-size: 22px; line-height: 1;
     }
     #topbar button:active { background: #2c2c2e; }
+    #topbar button.wide {
+      width: auto;
+      padding: 0 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    #topbar button.danger { color: #ff6b6b; }
     #url {
       flex: 1 1 auto;
       height: 36px;
@@ -124,6 +131,7 @@
       <button id="back" type="button" aria-label="Back">‹</button>
       <input id="url" type="search" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Search Google or type a URL">
       <button id="go" type="button" aria-label="Go">Go</button>
+      <button id="clear" class="wide danger" type="button" aria-label="Clear browsing history">Clear</button>
       <button id="kbd" type="button" aria-label="Keyboard">⌨</button>
     </div>
     <div id="screen-wrap">
