@@ -67,16 +67,9 @@
       display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
-    /* Contain-fit: never crop the remote framebuffer */
+    /* Let noVNC set canvas CSS width/height for correct touch mapping */
     #screen > div {
       margin: 0 !important;
-      max-width: 100% !important;
-      max-height: 100% !important;
-    }
-    #screen canvas {
-      object-fit: contain !important;
-      max-width: 100% !important;
-      max-height: 100% !important;
     }
     #status {
       position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);

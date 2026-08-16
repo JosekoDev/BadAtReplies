@@ -1,5 +1,6 @@
 import RFB from "./core/rfb.js";
 import KeyTable from "./core/input/keysym.js";
+import { clientToElement } from "./core/util/element.js";
 
 const statusEl = document.getElementById("status");
 const screenEl = document.getElementById("screen");
@@ -50,15 +51,9 @@ function ensureContainFit() {
 }
 
 rfb.addEventListener("connect", () => {
-  // Replace stock 1-finger-drag→mouse-drag with phone gestures below.
+  // Stock noVNC: 1-finger drag = mouse drag. We replace that with phone gestures.
   try {
     rfb._gestures.detach();
-  } catch (_) {
-    /* ignore */
-  }
-  // Also stop noVNC from treating leftover mouse events as drags.
-  try {
-    rfb._canvas.style.pointerEvents = "auto";
   } catch (_) {
     /* ignore */
   }
@@ -89,10 +84,10 @@ function waitCanvas() {
   });
 }
 
-// Higher threshold: phone jitter was flipping taps into "scroll" and killing clicks.
-const MOVE_PX = 28;
+// Thresholds are in *canvas CSS pixels* (same space as clientToElement).
+const MOVE_PX = 24;
 const HOLD_MS = 480;
-const WHEEL_LINE = 28;
+const WHEEL_LINE = 24;
 const TAP_MS = 350;
 
 let tracking = false;
@@ -115,15 +110,10 @@ function clearHold() {
   }
 }
 
+// IMPORTANT: _sendMouse expects canvas-element CSS pixels, then applies absX/Y
+// (divides by display scale). Do NOT pre-convert to framebuffer coords.
 function posFromTouch(t, canvas) {
-  const rect = canvas.getBoundingClientRect();
-  const w = Math.max(1, rect.width);
-  const h = Math.max(1, rect.height);
-  let x = ((t.clientX - rect.left) / w) * rfb._fbWidth;
-  let y = ((t.clientY - rect.top) / h) * rfb._fbHeight;
-  x = Math.max(0, Math.min(rfb._fbWidth - 1, Math.round(x)));
-  y = Math.max(0, Math.min(rfb._fbHeight - 1, Math.round(y)));
-  return { x, y };
+  return clientToElement(t.clientX, t.clientY, canvas);
 }
 
 function sendMove(x, y, mask) {
@@ -133,7 +123,6 @@ function sendMove(x, y, mask) {
 }
 
 function sendClick(x, y) {
-  // Brief press so Firefox registers a real click (not a zero-length flicker).
   sendMove(x, y, 0);
   sendMove(x, y, 1 << 0);
   setTimeout(() => sendMove(x, y, 0), 40);
@@ -170,7 +159,6 @@ async function navigateTo(raw) {
     dest = "https://www.google.com/search?q=" + encodeURIComponent(dest);
   }
   rfb.focus();
-  // Focus Firefox URL bar (visible again), select-all, paste, go
   chord([
     [KeyTable.XK_Control_L, "ControlLeft"],
     [KeyTable.XK_l, "KeyL"],
@@ -208,9 +196,6 @@ async function sendTypedText() {
 waitCanvas().then((canvas) => {
   canvas.style.touchAction = "none";
   canvas.style.cursor = "none";
-
-  // Capture on the screen wrapper too (iOS sometimes targets the parent).
-  const surface = screenEl;
 
   function onStart(e) {
     if (rfb._rfbConnectionState !== "connected") return;
@@ -286,8 +271,6 @@ waitCanvas().then((canvas) => {
     e.preventDefault();
     clearHold();
     const elapsed = Date.now() - startTs;
-    // Prefer click when it was a short, small movement — even if we briefly
-    // entered scroll from jitter.
     if (mode === "tap" || (mode === "scroll" && elapsed < TAP_MS && maxDist < MOVE_PX * 1.5)) {
       sendClick(lastX, lastY);
     }
@@ -296,13 +279,13 @@ waitCanvas().then((canvas) => {
     activeId = null;
   }
 
+  // Only listen on the canvas (the scaled framebuffer). Listening on the
+  // letterboxed parent made edge touches clamp and feel like "only edges work".
   const opts = { passive: false, capture: true };
-  for (const el of [canvas, surface]) {
-    el.addEventListener("touchstart", onStart, opts);
-    el.addEventListener("touchmove", onMove, opts);
-    el.addEventListener("touchend", onEnd, opts);
-    el.addEventListener("touchcancel", onEnd, opts);
-  }
+  canvas.addEventListener("touchstart", onStart, opts);
+  canvas.addEventListener("touchmove", onMove, opts);
+  canvas.addEventListener("touchend", onEnd, opts);
+  canvas.addEventListener("touchcancel", onEnd, opts);
 });
 
 document.getElementById("back").addEventListener("click", () => {
