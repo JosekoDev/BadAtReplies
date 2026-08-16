@@ -30,7 +30,7 @@ const rfb = new RFB(screenEl, target(), {
   shared: true,
   wsProtocols: ["binary"],
 });
-rfb.scaleViewport = true; // contain-fit (never crop)
+rfb.scaleViewport = true;
 rfb.resizeSession = false;
 rfb.clipViewport = false;
 rfb.showDotCursor = false;
@@ -50,9 +50,15 @@ function ensureContainFit() {
 }
 
 rfb.addEventListener("connect", () => {
-  // Stock noVNC maps 1-finger drag → mouse drag (PC remote). Kill that.
+  // Replace stock 1-finger-drag→mouse-drag with phone gestures below.
   try {
     rfb._gestures.detach();
+  } catch (_) {
+    /* ignore */
+  }
+  // Also stop noVNC from treating leftover mouse events as drags.
+  try {
+    rfb._canvas.style.pointerEvents = "auto";
   } catch (_) {
     /* ignore */
   }
@@ -62,6 +68,7 @@ rfb.addEventListener("connect", () => {
   hideChromeHints();
 });
 window.addEventListener("resize", ensureContainFit);
+
 rfb.addEventListener("disconnect", (e) => {
   setStatus(e.detail.clean ? "Disconnected — tap to reload" : "Lost connection — tap to reload", {
     clickable: true,
@@ -82,9 +89,11 @@ function waitCanvas() {
   });
 }
 
-const MOVE_PX = 8;
-const HOLD_MS = 420;
-const WHEEL_LINE = 36;
+// Higher threshold: phone jitter was flipping taps into "scroll" and killing clicks.
+const MOVE_PX = 28;
+const HOLD_MS = 480;
+const WHEEL_LINE = 28;
+const TAP_MS = 350;
 
 let tracking = false;
 let startX = 0;
@@ -96,6 +105,8 @@ let accumX = 0;
 let mode = null;
 let holdTimer = null;
 let activeId = null;
+let startTs = 0;
+let maxDist = 0;
 
 function clearHold() {
   if (holdTimer) {
@@ -106,20 +117,29 @@ function clearHold() {
 
 function posFromTouch(t, canvas) {
   const rect = canvas.getBoundingClientRect();
-  let x = ((t.clientX - rect.left) / rect.width) * rfb._fbWidth;
-  let y = ((t.clientY - rect.top) / rect.height) * rfb._fbHeight;
+  const w = Math.max(1, rect.width);
+  const h = Math.max(1, rect.height);
+  let x = ((t.clientX - rect.left) / w) * rfb._fbWidth;
+  let y = ((t.clientY - rect.top) / h) * rfb._fbHeight;
   x = Math.max(0, Math.min(rfb._fbWidth - 1, Math.round(x)));
   y = Math.max(0, Math.min(rfb._fbHeight - 1, Math.round(y)));
   return { x, y };
 }
 
 function sendMove(x, y, mask) {
+  if (rfb._rfbConnectionState !== "connected") return;
   rfb._mousePos = { x, y };
   rfb._sendMouse(x, y, mask);
 }
 
+function sendClick(x, y) {
+  // Brief press so Firefox registers a real click (not a zero-length flicker).
+  sendMove(x, y, 0);
+  sendMove(x, y, 1 << 0);
+  setTimeout(() => sendMove(x, y, 0), 40);
+}
+
 function sendWheel(x, y, dx, dy) {
-  // bits: 3=up 4=down 5=left 6=right
   let mask = 0;
   if (dy < 0) mask |= 1 << 3;
   if (dy > 0) mask |= 1 << 4;
@@ -147,22 +167,27 @@ async function navigateTo(raw) {
   if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(dest) && !dest.includes(" ")) {
     dest = "https://" + dest;
   } else if (dest.includes(" ") || !dest.includes(".")) {
-    dest = "https://duckduckgo.com/?q=" + encodeURIComponent(dest);
+    dest = "https://www.google.com/search?q=" + encodeURIComponent(dest);
   }
   rfb.focus();
-  // Focus Firefox URL bar, paste, go
+  // Focus Firefox URL bar (visible again), select-all, paste, go
   chord([
     [KeyTable.XK_Control_L, "ControlLeft"],
     [KeyTable.XK_l, "KeyL"],
   ]);
-  await new Promise((r) => setTimeout(r, 120));
+  await new Promise((r) => setTimeout(r, 160));
+  chord([
+    [KeyTable.XK_Control_L, "ControlLeft"],
+    [KeyTable.XK_a, "KeyA"],
+  ]);
+  await new Promise((r) => setTimeout(r, 60));
   rfb.clipboardPasteFrom(dest);
   await new Promise((r) => setTimeout(r, 80));
   chord([
     [KeyTable.XK_Control_L, "ControlLeft"],
     [KeyTable.XK_v, "KeyV"],
   ]);
-  await new Promise((r) => setTimeout(r, 80));
+  await new Promise((r) => setTimeout(r, 100));
   keyOnce(KeyTable.XK_Return, "Enter");
 }
 
@@ -184,6 +209,9 @@ waitCanvas().then((canvas) => {
   canvas.style.touchAction = "none";
   canvas.style.cursor = "none";
 
+  // Capture on the screen wrapper too (iOS sometimes targets the parent).
+  const surface = screenEl;
+
   function onStart(e) {
     if (rfb._rfbConnectionState !== "connected") return;
     if (e.touches.length !== 1) return;
@@ -194,6 +222,8 @@ waitCanvas().then((canvas) => {
     mode = "tap";
     accumY = 0;
     accumX = 0;
+    maxDist = 0;
+    startTs = Date.now();
     const p = posFromTouch(t, canvas);
     startX = lastX = p.x;
     startY = lastY = p.y;
@@ -201,10 +231,10 @@ waitCanvas().then((canvas) => {
 
     clearHold();
     holdTimer = setTimeout(() => {
-      if (tracking && mode === "tap") {
+      if (tracking && mode === "tap" && maxDist < MOVE_PX) {
         mode = "right";
         sendMove(lastX, lastY, 1 << 2);
-        sendMove(lastX, lastY, 0);
+        setTimeout(() => sendMove(lastX, lastY, 0), 40);
         if (navigator.vibrate) navigator.vibrate(16);
       }
     }, HOLD_MS);
@@ -218,8 +248,9 @@ waitCanvas().then((canvas) => {
     const p = posFromTouch(t, canvas);
     const dx = p.x - startX;
     const dy = p.y - startY;
+    maxDist = Math.max(maxDist, Math.hypot(dx, dy));
 
-    if (mode === "tap" && (Math.abs(dx) > MOVE_PX || Math.abs(dy) > MOVE_PX)) {
+    if (mode === "tap" && maxDist > MOVE_PX) {
       clearHold();
       mode = "scroll";
     }
@@ -254,19 +285,24 @@ waitCanvas().then((canvas) => {
     if ([...e.touches].some((x) => x.identifier === activeId)) return;
     e.preventDefault();
     clearHold();
-    if (mode === "tap") {
-      sendMove(lastX, lastY, 1 << 0);
-      sendMove(lastX, lastY, 0);
+    const elapsed = Date.now() - startTs;
+    // Prefer click when it was a short, small movement — even if we briefly
+    // entered scroll from jitter.
+    if (mode === "tap" || (mode === "scroll" && elapsed < TAP_MS && maxDist < MOVE_PX * 1.5)) {
+      sendClick(lastX, lastY);
     }
     tracking = false;
     mode = null;
     activeId = null;
   }
 
-  canvas.addEventListener("touchstart", onStart, { passive: false });
-  canvas.addEventListener("touchmove", onMove, { passive: false });
-  canvas.addEventListener("touchend", onEnd, { passive: false });
-  canvas.addEventListener("touchcancel", onEnd, { passive: false });
+  const opts = { passive: false, capture: true };
+  for (const el of [canvas, surface]) {
+    el.addEventListener("touchstart", onStart, opts);
+    el.addEventListener("touchmove", onMove, opts);
+    el.addEventListener("touchend", onEnd, opts);
+    el.addEventListener("touchcancel", onEnd, opts);
+  }
 });
 
 document.getElementById("back").addEventListener("click", () => {

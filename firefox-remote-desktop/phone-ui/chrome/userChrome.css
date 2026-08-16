@@ -1,33 +1,33 @@
-/* Phone kiosk: hide desktop Firefox chrome; phone.html provides nav. */
-#TabsToolbar,
-#titlebar,
-#PersonalToolbar,
-#sidebar-box,
-#sidebar-header,
-#statuspanel,
-#navigator-toolbox,
-toolbox#navigator-toolbox {
-  display: none !important;
+/* Force a visible URL/search bar; only collapse the tab strip. */
+#TabsToolbar {
   visibility: collapse !important;
+  min-height: 0 !important;
   height: 0 !important;
   max-height: 0 !important;
+}
+
+#PersonalToolbar {
+  visibility: collapse !important;
   min-height: 0 !important;
-  overflow: hidden !important;
+  height: 0 !important;
+}
+
+#navigator-toolbox,
+#nav-bar,
+#nav-bar-customization-target,
+#urlbar-container,
+#urlbar {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 #navigator-toolbox {
-  --tabs-navbar-shadow-size: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-browser,
-#tabbrowser-tabpanels,
-#appcontent,
-#content,
-#browser {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-#main-window {
-  --chrome-content-separator-color: transparent !important;
+#nav-bar {
+  display: flex !important;
+  min-height: 48px !important;
+  height: 48px !important;
 }
