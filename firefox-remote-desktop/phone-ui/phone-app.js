@@ -37,8 +37,8 @@ rfb.clipViewport = false;
 rfb.showDotCursor = false;
 rfb.focusOnClick = true;
 rfb.dragViewport = false;
-rfb.qualityLevel = 6;
-rfb.compressionLevel = 2;
+rfb.qualityLevel = 5; // slightly smaller frames → steadier update rate
+rfb.compressionLevel = 0; // least CPU on encode/decode
 
 function ensureContainFit() {
   rfb.scaleViewport = true;
