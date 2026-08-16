@@ -85,9 +85,9 @@ function waitCanvas() {
 }
 
 // Thresholds are in *canvas CSS pixels* (same space as clientToElement).
-const MOVE_PX = 24;
+const MOVE_PX = 36; // higher = less twitchy with fast VNC polls
 const HOLD_MS = 480;
-const WHEEL_LINE = 24;
+const WHEEL_LINE = 40; // fewer wheel ticks per finger travel
 const TAP_MS = 350;
 
 let tracking = false;
@@ -324,6 +324,16 @@ async function clearBrowsingHistory() {
 }
 
 document.getElementById("clear").addEventListener("click", () => clearBrowsingHistory());
+
+document.getElementById("video").addEventListener("click", () => {
+  // Selkies H.264 — actually capable of ~60fps video; VNC is not.
+  const u = new URL(location.href);
+  u.port = "3001";
+  u.pathname = "/";
+  u.search = "";
+  u.hash = "";
+  location.href = u.toString();
+});
 
 document.getElementById("kbd").addEventListener("click", () => {
   kbEl.classList.add("open");

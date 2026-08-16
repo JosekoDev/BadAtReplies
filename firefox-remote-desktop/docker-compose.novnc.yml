@@ -22,6 +22,10 @@ services:
       - SELKIES_IS_MANUAL_RESOLUTION_MODE=true
       - NO_DECOR=true
       - WEB_PORT=5000
+      # Smooth video (Selkies H.264 on :3001) — VNC cannot sustain video FPS
+      - SELKIES_FRAMERATE=60
+      - SELKIES_VIDEO_BITRATE=12
+      - SELKIES_ENCODER=x264enc
     volumes:
       - ./config:/config
       - ./phone-ui:/phone-ui:ro

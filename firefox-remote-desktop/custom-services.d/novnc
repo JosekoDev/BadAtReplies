@@ -40,11 +40,11 @@ pkill -f "phone-gateway.py" >/dev/null 2>&1 || true
 sleep 1
 
 # Must run x11vnc as abc (X authority / MIT-SHM)
-# Aim for smooth motion: poll/defer ~5ms, no idle naps, threaded I/O,
-# assume fast Tailscale link (speeds: readKB, netKB, latencyMs).
+# Aim for responsive UI without over-twitchy input. Full-motion video
+# still needs Selkies/WebRTC (:3001) — VNC cannot keep up with video.
 su -s /bin/bash abc -c \
   "x11vnc -display ${DISPLAY_NUM} -forever -shared -rfbport ${RFB_PORT} -nopw -xkb \
-    -wait 5 -defer 5 -nonap -threads -pointer_mode 1 \
+    -wait 10 -defer 10 -nonap -threads -pointer_mode 1 \
     -speeds 100000,100000,1 \
     -bg -o /tmp/x11vnc.log"
 
