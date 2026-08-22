@@ -30,7 +30,6 @@ sleep 6
 docker exec firefox-novnc bash -lc '
   selkies-resize 500x1086 >/dev/null 2>&1 || true
   cp -f /phone-ui/phone.html /phone-ui/phone-app.js /phone-ui/index.html /phone-ui/phone-gateway.py /usr/share/novnc/ 2>/dev/null || true
-  bash /custom-cont-init.d/15-selkies-landscape.sh 2>/dev/null || true
   pgrep -a x11vnc || true
   pgrep -af "phone-gateway|websockify" || true
 '
