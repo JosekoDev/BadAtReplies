@@ -122,6 +122,27 @@
       background: #1c1c1e; color: var(--ink); font-size: 15px; font-weight: 600;
     }
     #kb .row button.primary { background: var(--accent); color: #fff; }
+
+    /* Landscape: hide chrome, stream fills width (not shrunk by short height) */
+    @media (orientation: landscape) {
+      #shell {
+        grid-template-rows: 1fr;
+      }
+      #topbar,
+      #hint {
+        display: none;
+      }
+      #screen-wrap {
+        position: fixed;
+        inset: 0;
+      }
+      #screen {
+        inset: 0;
+      }
+      #status {
+        top: 50%;
+      }
+    }
   </style>
   <script type="module" src="phone-app.js"></script>
 </head>

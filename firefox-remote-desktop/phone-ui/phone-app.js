@@ -40,14 +40,74 @@ rfb.dragViewport = false;
 rfb.qualityLevel = 5; // slightly smaller frames → steadier update rate
 rfb.compressionLevel = 0; // least CPU on encode/decode
 
-function ensureContainFit() {
+function isLandscape() {
+  return window.matchMedia("(orientation: landscape)").matches;
+}
+
+function applyViewportFit() {
+  const landscape = isLandscape();
+  document.documentElement.classList.toggle("landscape", landscape);
+
+  if (rfb._rfbConnectionState !== "connected" || !rfb._canvas) {
+    return;
+  }
+
+  const canvas = rfb._canvas;
+  const container = screenEl.getBoundingClientRect();
+  const fbW = rfb._display?.width || canvas.width;
+  const fbH = rfb._display?.height || canvas.height;
+  if (!fbW || !fbH || !container.width || !container.height) {
+    return;
+  }
+
+  if (landscape) {
+    // Portrait framebuffer in a wide viewport: scale to fill width, not height.
+    rfb.scaleViewport = false;
+    const scale = container.width / fbW;
+    canvas.style.width = `${Math.round(fbW * scale)}px`;
+    canvas.style.height = `${Math.round(fbH * scale)}px`;
+    canvas.style.maxWidth = "none";
+    canvas.style.maxHeight = "none";
+    const host = canvas.parentElement;
+    if (host) {
+      host.style.display = "flex";
+      host.style.alignItems = "center";
+      host.style.justifyContent = "center";
+      host.style.overflow = "hidden";
+      host.style.width = "100%";
+      host.style.height = "100%";
+    }
+    return;
+  }
+
   rfb.scaleViewport = true;
   rfb.clipViewport = false;
+  const host = canvas.parentElement;
+  if (host) {
+    host.style.display = "";
+    host.style.alignItems = "";
+    host.style.justifyContent = "";
+    host.style.overflow = "";
+    host.style.width = "";
+    host.style.height = "";
+  }
+  canvas.style.maxWidth = "";
+  canvas.style.maxHeight = "";
   try {
     rfb._updateScale();
   } catch (_) {
     /* ignore */
   }
+}
+
+function ensureContainFit() {
+  applyViewportFit();
+}
+
+function onViewportChange() {
+  applyViewportFit();
+  requestAnimationFrame(applyViewportFit);
+  setTimeout(applyViewportFit, 150);
 }
 
 rfb.addEventListener("connect", () => {
@@ -62,7 +122,11 @@ rfb.addEventListener("connect", () => {
   setStatus("");
   hideChromeHints();
 });
-window.addEventListener("resize", ensureContainFit);
+window.addEventListener("resize", onViewportChange);
+window.addEventListener("orientationchange", onViewportChange);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", onViewportChange);
+}
 
 rfb.addEventListener("disconnect", (e) => {
   setStatus(e.detail.clean ? "Disconnected — tap to reload" : "Lost connection — tap to reload", {
@@ -73,6 +137,7 @@ rfb.addEventListener("disconnect", (e) => {
 rfb.addEventListener("credentialsrequired", () => {
   rfb.sendCredentials({ password: params.get("password") || "" });
 });
+rfb.addEventListener("desktopname", onViewportChange);
 
 function waitCanvas() {
   return new Promise((resolve) => {
